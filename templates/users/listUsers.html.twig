@@ -5,92 +5,34 @@
 <h1>HEllO welcome to the jurrasic world</h1>
 <a href={{ path('addUser')}}> Ajouter un user </a>
 <table class="table table-hover">
-  {# <thead>
+  <thead>
     <tr>
-      <th scope="col">Type</th>
-  
-      <th scope="col">Column heading</th>
-      <th scope="col">Column heading</th>
-      <th scope="col">Column heading</th>
-      <th scope="col">Column heading</th>
-      <th scope="col">Column heading</th>
+      <th scope="col">Nom</th>
+      <th scope="col">LastName</th>
+      <th scope="col">Email</th>
+      <th scope="col">Premiere co</th>
+      <th scope="col">Derniere co</th>
+      <th scope="col">afficher</th>
+      <th scope="col">modifier</th>
+      <th scope="col">suprimer</th>
     </tr>
-  </thead> #}
+  </thead> 
   <tbody>
-    <tr class="table-active">
-      <th scope="row">Name</th>
-      {% for user in users %}
-      <td>{{ user.name}}</td>
-      {% endfor %}
-    </tr>
-    <tr>
-      <th scope="row">LastName</th>
-      {% for user in users %}
-      <td>{{ user.lastName}}</td>
-      {% endfor %}
-    </tr>
-    <tr class="table-primary">
-      <th scope="row">Email</th>
-       {% for user in users %}
-      <td>{{ user.email}}</td>
-      {% endfor %}
-    </tr>
-    <tr class="table-secondary">
-      <th scope="row">Premiere details</th>
-     {% for user in users %}
-      <td>{{ user.dateCreate|date('Y-m-d')}}</td>
-      {% endfor %}
-    </tr>
-    </tr>
-    <tr class="table-success">
-      <th scope="row">Derniere co</th>
-      {% for user in users %}
-      <td>{{ user. dateLastLogin|date('Y-m-d')}}</td>
-      {% endfor %}
-    </tr>
 
-    <tr class="table-danger">
-      <th scope="row">afficher details</th>
-     {% for user in users %}
-       <td><a class="nav-link" href={{ path('displayUser', {'id':user.id}) }}>display One User</a></td>
-      {% endfor %}
-    </tr>
-     <tr class="table-danger">
-      <th scope="row">afficher details</th>
-     {% for user in users %}
-       <td><a class="nav-link" href={{ path('editUser', {'id':user.id}) }}>modifier</a></td>
-      {% endfor %}
-    </tr>
-     <tr class="table-danger">
-      <th scope="row">afficher details</th>
-     {% for user in users %}
-       <td><a class="nav-link" href={{ path('deleteUser', {'id':user.id}) }}>delete</a></td>
-      {% endfor %}
-    </tr>
-    {# <tr class="table-warning">
-      <th scope="row">Warning</th>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-    </tr>
-    <tr class="table-info">
-      <th scope="row">Info</th>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-    </tr>
-    <tr class="table-light">
-      <th scope="row">Light</th>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-    </tr>
-    <tr class="table-dark">
-      <th scope="row">Dark</th>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-    </tr> #}
+   <tr class="table-active">
+        {% for user in users %}
+            <tr>
+                <td>{{ user.name}}</td>
+                <td>{{ user.lastName}}</td>
+                <td>{{ user.email }}</td>
+                <td>{{  user.dateCreate|date('Y-m-d')}}</td>
+                <td>{{user. dateLastLogin|date('Y-m-d')}}</td>
+                <td><a class="nav-link" href={{ path('displayUser', {'id':user.id}) }}>display One User</a></td>
+                <td><a class="nav-link" href={{ path('editUser', {'id':user.id}) }}>modifier</a></td>
+                <td><a class="nav-link" href={{ path('deleteUser', {'id':user.id}) }}>delete</a></td>
+            </tr>
+        {% endfor %}
+
   </tbody>
 </table> 
 {% endblock %}

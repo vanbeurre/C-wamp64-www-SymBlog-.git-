@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UsersRepository")
@@ -71,6 +72,23 @@ class Users implements UserInterface
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $dateLastLogin;
+
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Articles", mappedBy="user")
+     */
+    private $Articles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Comments", mappedBy="users")
+     */
+    private $Comments;
+
+    public function __construct()
+    {
+        $this->Articles = new ArrayCollection();
+        $this->Comments = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -157,7 +175,7 @@ class Users implements UserInterface
 
     public function getSalt()
     {
-        return 'gfdsg4df65g465e4654';
+        return '';
     }
 
     public function getUsername()
@@ -176,6 +194,68 @@ class Users implements UserInterface
     public function setUser(?Articles $User): self
     {
         $this->User = $User;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Articles[]
+     */
+    public function getArticles(): Collection
+    {
+        return $this->Articles;
+    }
+
+    public function addArticle(Articles $article): self
+    {
+        if (!$this->Articles->contains($article)) {
+            $this->Articles[] = $article;
+            $article->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Articles $article): self
+    {
+        if ($this->Articles->contains($article)) {
+            $this->Articles->removeElement($article);
+            // set the owning side to null (unless already changed)
+            if ($article->getUser() === $this) {
+                $article->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Comments[]
+     */
+    public function getComments(): Collection
+    {
+        return $this->Comments;
+    }
+
+    public function addComment(Comments $comment): self
+    {
+        if (!$this->Comments->contains($comment)) {
+            $this->Comments[] = $comment;
+            $comment->setUsers($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comments $comment): self
+    {
+        if ($this->Comments->contains($comment)) {
+            $this->Comments->removeElement($comment);
+            // set the owning side to null (unless already changed)
+            if ($comment->getUsers() === $this) {
+                $comment->setUsers(null);
+            }
+        }
 
         return $this;
     }

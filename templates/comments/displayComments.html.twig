@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    {% for comment in comments %}
+    <ul>
+        <li> {{ comment.content }}</li>
+        <li> {{ comment.users.name }}</li>
+        <li>{{ comment.dateCreate|date('Y-m-d')}}</li>
+    </ul>
+       <a href={{ path('addComment', {'id':comment.articles.id}) }}>Ajouter un commentaire pour cet article </a>
+     {% endfor %}
+
+
+{% endblock %}

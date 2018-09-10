@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+ 
+    <ul>
+       <h1>Titre: {{ articles.title }}</h1>
+        <li>Contenu: {{ articles.content }} </li>
+        <li>Author: {{ articles.user.name }} </li>  
+    </ul>
+    {% for comment in articles.comments %}
+    <ul>
+        <li> {{ comment.content }}</li>
+        <li> {{ comment.users.name }}</li>
+        <li>{{ comment.dateCreate|date('Y-m-d')}}</li>
+        
+    </ul>
+    {% endfor %}
+
+
+ <h1>Ajouter un Comment</h1>
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+
+    <input type="submit" />
+{{ form_end(form) }}
+
+{% endblock %}
+
