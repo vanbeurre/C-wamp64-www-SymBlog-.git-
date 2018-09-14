@@ -2,26 +2,40 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Repository\UsersRepository;
+use App\Entity\Users;
 use Symfony\Component\Form\Forms;
+use App\Repository\UsersRepository;
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\HttpFoundation\Request;
-use App\Entity\Users;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use App\Service\FileUploader;
+use Symfony\Component\Translation\TranslatorInterface;
 
+/**
+* @Route("/{_locale}")
+*     requirements={
+*         "_locale": '%app.locales%',
+*     }
+*/
 
 class UsersController extends AbstractController
 {
     /**
      * @Route("/users", name="users")
+     * @Route("/admin")
+     * @Route("/profile")
      */
+
     public function index()
     {
         return $this->render('users/index.html.twig', [
@@ -30,9 +44,10 @@ class UsersController extends AbstractController
         ]);
     }
      /**
-     * @Route("/users/{id}", name="displayUser" ,requirements={"id"="\d+"}))
+     * @Route("/user/users/{id}", name="displayUser" ,requirements={"id"="\d+"}))
      */
-    public function displayOne(UsersRepository $repository, $id){
+    public function displayOne(UsersRepository $repository, $id,TranslatorInterface $translator){
+        // $translated = $translator->trans('hello');
         $user = $repository->findOneById($id); 
         return $this->render('users/usersDetail.html.twig', [
             'user' => $user,
@@ -52,24 +67,28 @@ class UsersController extends AbstractController
         ]);
     }
    /**
-     * @Route("/users/addUser", name="addUser")
-     * @Route("/users/edit/{id}", name="editUser", requirements={"id"="\d+"})
+     * @Route("/admin/users/addUser", name="addUser")
+     * @Route("/user/users/edit/{id}", name="editUser", requirements={"id"="\d+"})
      */
 
-    public function addUser(Users $user=null, Request $request, ObjectManager $manager, UserPasswordEncoderInterface $encoder){
+    public function addUser(Users $user=null, Request $request, ObjectManager $manager, UserPasswordEncoderInterface $encoder, FileUploader $fileUploader){
 
-        if(is_null($user))
+        if(is_null($user)){
             $user=new Users();
-
-            // $user->setName('name')
-            //      ->setName('lastname')
-            //      ->setName('password')
-            //      ->setName('email'); 
-    
-            $form = $this->createFormBuilder($user)
-                    ->add('name', TextType::class)
+            $form = $this->createFormBuilder($user, array('allow_extra_fields' =>true))
+            ->add('name', TextType::class)
                     ->add('lastName', TextType::class)
-                    ->add('password', RepeatedType::class, array(
+                    ->add('email', TextType::class)
+                    ->add('username', TextType::class)
+                    ->add('role', ChoiceType::class, array(
+                        'choices'  => array(
+                            'Utilisateur' => 'ROLE_USER',
+                            'Auteur' => 'ROLE_AUTHOR',
+                            'Admin' => 'ROLE_ADMIN',
+                        ),
+                        'mapped' => false
+                    ))      
+                     ->add('password', RepeatedType::class, array(
                         'type' => PasswordType::class,
                         'invalid_message' => 'The password fields must match.',
                         'options' => array('attr' => array('class' => 'password-field')),
@@ -77,13 +96,56 @@ class UsersController extends AbstractController
                         'first_options'  => array('label' => 'Password'),
                         'second_options' => array('label' => 'Repeat Password'),
                     ))
-                    ->add('email', TextType::class)
+                    ->add('avatar', FileType::class, array('label' => 'Avatar (PNG file)', "data_class" => null))
                     ->getForm();
-                 
+                    /////////////////////////////////////////////////////////////////////////////////////////////////
+                     }else{
+                        $form = $this->createFormBuilder($user, array('allow_extra_fields' =>true))
+                        ->add('name', TextType::class)
+                                ->add('lastName', TextType::class)
+                                ->add('email', TextType::class)
+                                ->add('username', TextType::class)
+                                ->add('role', ChoiceType::class, array(
+                                    'choices'  => array(
+                                        'Utilisateur' => 'ROLE_USER',
+                                        'Auteur' => 'ROLE_AUTHOR',
+                                        'Admin' => 'ROLE_ADMIN',
+                                    ),
+                                    'mapped' => false
+                                )) ->add('avatar', FileType::class, array('label' => 'Avatar (PNG file)', "data_class" => null))
+                                ->getForm();
+                           
+                             $form->handleRequest($request);    
+                             if ( $form->isSubmitted() && $form->isValid() && !is_null($user) ) {         
+                                // $file stores the uploaded PNG file
+                                /** @var Symfony\Component\HttpFoundation\File\UploadedFile $file */
+                                $file = $form['avatar']->getData();
+                                $fileName = $fileUploader->upload($file);       
+                                $user->setAvatar($fileName);
+                                dump($file); 
+                                $user->setRoles($request->request->all()['form']['role']); //Com fabien : WTF ??
+                                $user->setDateCreate( new \DateTime() ); 
+                                $manager->persist( $user );
+                                $manager->flush();
+                            
+                                return $this->redirectToRoute('listUsers');
+                              
+                        }
+                        return $this->render('users/addUser.html.twig',[
+                            'form'=>$form->createView()
+                        ]);             
+                     }
+                  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////            
             $form->handleRequest($request);
             dump($user);
-            if ( $form->isSubmitted() && $form->isValid() ) {
-                
+            if ( $form->isSubmitted() && $form->isValid() && !is_null($user) ) {         
+                    // $file stores the uploaded PNG file
+                    /** @var Symfony\Component\HttpFoundation\File\UploadedFile $file */
+                    $file = $form['avatar']->getData();
+                    $fileName = $fileUploader->upload($file);       
+                    $user->setAvatar($fileName);
+                    dump($file); 
+                    $user->setRoles($request->request->all()['form']['role']); //Com fabien : WTF ??
                     $user->setDateCreate( new \DateTime() ); 
                     $plainPassword= $user->getPassword(); 
                     $encoded = $encoder->encodePassword($user, $plainPassword);
@@ -95,17 +157,28 @@ class UsersController extends AbstractController
                   
             }
             return $this->render('users/addUser.html.twig',[
-                'form'=>$form->createView(),
+                'form'=>$form->createView()
             ]);   
     }
     /**
-     * @Route("/users/delete/{id}", name="deleteUser", requirements={"id"="\d+"})
+     * @return string
+     */
+    private function generateUniqueFileName()
+    {
+        // md5() reduces the similarity of the file names generated by
+        // uniqid(), which is based on timestamps
+        return md5(uniqid());
+    }
+    /**
+     * @Route("/admin/users/delete/{id}", name="deleteUser", requirements={"id"="\d+"})
      */
     public function deleteUser(Users $user, ObjectManager $manager){
         $manager->remove( $user );
         $manager->flush();
         return $this->redirectToRoute('listUsers');
     }
+
+  
 
     
   

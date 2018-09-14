@@ -2,10 +2,14 @@
 
 
 {% block body %}
+
 <ul>
     <li>{{ user.name }} </li>
     <li>{{ user.lastname }} </li>
     <li>{{ user.email }} </li>
+    <img r src="{{asset('uploads/avatar/'~user.avatar) | imagine_filter('my_thumb')  }}">
+    
+    
     
 </ul>
 

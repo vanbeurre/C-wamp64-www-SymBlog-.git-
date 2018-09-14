@@ -33,6 +33,8 @@ class Kernel extends BaseKernel
                 yield new $class();
             }
         }
+      
+
     }
 
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader)

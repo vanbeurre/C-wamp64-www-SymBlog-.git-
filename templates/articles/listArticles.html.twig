@@ -2,8 +2,9 @@
 
 
 {% block body %}
-<h1>HEllO welcome to the jurrasic world</h1>
+<h1>{% trans %}Bienvenue dans le monde jurassique{% endtrans %}</h1>
 {# <a href={{ path('addUser')}}> Ajouter un user </a> #}
+<h1>{% trans %}Bonjour{% endtrans %}</h1>
 <table class="table table-hover">
 <thead>
 <tr>
@@ -17,7 +18,9 @@
 </thead>
   <tbody>
     <tr class="table-active">
+   
         {% for article in articles %}
+  
             <tr>
                 <td>{{ article.id}}</td>
                 <td>{{ article.title}}</td>
@@ -25,13 +28,14 @@
                 <td>{{ article.dateCreate|date('Y-m-d')}}</td>
                 <td>{{ article.user.lastName }}</td>
                 <td><a class="nav-link" href={{ path('displayArticle', {'id':article.id}) }}>display Article</a></td>
-                <td><a href={{ path('displayComments', {'id':article.id}) }}> Afficher les commentaires </a></td>
                  <td><a class="nav-link" href={{ path('editArticle', {'id':article.id}) }}>modifier</a></td>
                  <td><a class="nav-link" href={{ path('deleteArticle', {'id':article.id}) }}>delete</a></td>
+                
 
             </tr>
-        {% endfor %}
- 
+      
+          {% endfor %}
+
       </tbody>
 </table> 
 {% endblock %}

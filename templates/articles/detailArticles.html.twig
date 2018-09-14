@@ -3,16 +3,23 @@
  
     <ul>
        <h1>Titre: {{ articles.title }}</h1>
-        <li>Contenu: {{ articles.content }} </li>
+        <p>{{ articles.content }} </p>
         <li>Author: {{ articles.user.name }} </li>  
     </ul>
+
+    <h2>Comments</h2>
+
     {% for comment in articles.comments %}
     <ul>
-        <li> {{ comment.content }}</li>
-        <li> {{ comment.users.name }}</li>
-        <li>{{ comment.dateCreate|date('Y-m-d')}}</li>
+        <p> {{ comment.content }}</p>
+        <li> ecrit par: {{ comment.users.name }}</li>
+        <li>le: {{ comment.dateCreate|date('Y-m-d')}}</li>
         
     </ul>
+    {% endfor %}
+
+      {% for categorie in articles.categories %}
+                <p>categorie: {{ categorie.name}}</p>
     {% endfor %}
 
 
